@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Scraper</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Business Data Scraper</h1>
+        <p class="subtitle">Enter business type and location to get data</p>
+        
+        <form id="scrape-form">
+            <div class="form-group">
+                <label for="business_type">Business Type</label>
+                <input type="text" id="business_type" name="business_type" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" required>
+            </div>
+    
+            <button type="submit">
+                <span class="button-text">Scrape</span>
+                <span class="spinner" style="display: none;"></span>
+            </button>
+        </form>
+        <div id="status" style="display: none;"></div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
