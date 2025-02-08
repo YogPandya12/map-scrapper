@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, render_template, after_this_request
+from flask import Flask, request, send_file, render_template, after_this_request, make_response
 from scraper import scrape_business_info
 import os
 
@@ -17,22 +17,31 @@ def scrape():
         if not business_type or not location:
             return "Error: Please enter both Business Type and Location.", 400
 
-        csv_file = scrape_business_info(business_type, location)
-        print('CSV FILE',csv_file)
-        if csv_file:
-            @after_this_request
-            def remove_file(response):
-                try:
-                    os.remove(csv_file)
-                except Exception as e:
-                    app.logger.error(f"Error removing or closing downloaded file handle: {e}")
-                return response
-            return send_file(csv_file, as_attachment=True)
-        else:
+        excel_file = scrape_business_info(business_type, location)
+        if not excel_file:
             return "Error occurred during scraping. Please try again."
+
+        filename = os.path.basename(excel_file)
+
+        # Open the file in binary mode and read its contents into memory.
+        with open(excel_file, "rb") as f:
+            data = f.read()
+
+        # Delete the file now that we've read it.
+        try:
+            os.remove(excel_file)
+        except Exception as e:
+            app.logger.error(f"Error removing file: {e}")
+
+        # Create a response with the file data.
+        response = make_response(data)
+        response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+        
     except Exception as e:
         app.logger.error(f"Error during scraping: {e}")
         return "An unexpected error occurred. Please try again later.", 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

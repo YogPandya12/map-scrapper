@@ -1,7 +1,7 @@
 import csv
 import time
 import os
-import argparse
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -19,14 +19,14 @@ def scrape_business_info(business_type, location):
 
     print(f"Searching for {business_type} in {location}")
 
-    # Set up Chrome options
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-accelerated-2d-canvas")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--lang=en-US")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -102,7 +102,7 @@ def scrape_business_info(business_type, location):
             url_match = re.search(r'https?://[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', business_url)
             clean_url = url_match.group(0) if url_match else ""
         except:
-            business_url = ""
+            clean_url = ""
 
         try:
             phone = WebDriverWait(driver, 2).until(
@@ -118,18 +118,10 @@ def scrape_business_info(business_type, location):
 
     driver.quit()
 
-    csv_filename = f'output/{business_type.replace(" ", "_")}_{location.replace(" ", "_")}.csv'
+    excel_filename = f'output/{business_type.replace(" ", "_")}_{location.replace(" ", "_")}.xlsx'
 
-    with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Phone', 'Url'])
-        for name, phone, url in zip(names, phones, urls):
-            writer.writerow([name, phone, url])
+    df = pd.DataFrame({'Name': names, 'Phone': phones, 'Url': urls})
+    df.to_excel(excel_filename, index=False, engine='openpyxl')
 
-    return csv_filename
-    # print(f'Successfully scraped {len(names)} businesses.')
-    # print(f'Data saved to {csv_filename}')
+    return excel_filename
 
-# business_type = "software company" 
-# location = "ahmedabad"
-# scrape_business_info(business_type, location)

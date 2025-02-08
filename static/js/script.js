@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const businessType = formData.get('business_type').replace(/\s+/g, '_').toLowerCase();
             const location = formData.get('location').replace(/\s+/g, '_').toLowerCase();
-            const filename = `${businessType}_${location}.csv`;
+            const filename = `${businessType}_${location}.xlsx`;
 
             a.href = url;
             a.download = filename;
